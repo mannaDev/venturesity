@@ -1,0 +1,26 @@
+body{
+    background: #CFF;
+    color: #603;
+}
+
+#getFormButton, #submitButton{
+    background: #3CF;
+    border-radius: 10px;
+    padding:10px 0;
+    font-weight: bold;
+}
+#getFormButton{
+    width:70%;
+    margin-left: 15%;
+}
+#submitButton{
+    width:40%;
+    margin-left: 30%;
+}
+.checkBoxDivClass{
+    margin-left: 5px;
+}
+fieldset{
+    padding-bottom: 40px;
+    margin-bottom: 5px;
+}

@@ -1,0 +1,142 @@
+<html>
+    <head>
+        <link href="styleCode.css" rel = "stylesheet"/>
+    </head>
+    <body>
+        <button onclick="getForm()" id = "getFormButton">GET FORM</button>
+        <form action="" id = "myForm">
+           
+        </form>
+       
+    </body>
+</html>
+ 
+<script>
+function getForm(){
+    console.log("GET FORM initiated");
+    document.getElementById("getFormButton").style.display = "none";
+   
+    //Getting Form from the server
+    
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            //Rendering the Form
+            form_data = JSON.parse(this.responseText);
+            
+            formElements = form_data['data']['form_fields'];
+            console.log(formElements);
+            var formDOM = document.getElementById("myForm");
+            formDOM.innerHTML += "<h2>Form ID: "+form_data.data.form_id+"</h2>";
+            formDOM.innerHTML += "<h2>Form Name : "+form_data.data.form_name+"</h2>";
+            //formDOM.innerHTML += "<h2>Total Form Fields : "+formElements.length+"</h2>";
+           
+            formElements.forEach(function(currentFormField){    
+                var field_set = document.createElement('fieldset');
+                var divQ = document.createElement('div');
+                var divA = document.createElement('div');
+
+                var labelField = document.createElement('h4');
+                labelField.innerHTML = currentFormField.label;
+                divQ.appendChild(labelField);
+                
+                var descriptionField = document.createElement('p');
+                descriptionField.innerHTML = "<b>Description: </b>"+currentFormField.description;
+                divQ.appendChild(descriptionField);
+                
+                switch(currentFormField.component){
+                    case "textarea":
+                        var textAreaField = document.createElement('textarea');
+                        if(currentFormField.autofill != null)
+                            textAreaField.innerHTML = currentFormField.autofill;
+                        textAreaField.required = currentFormField.required;
+                        textAreaField.disabled = (!currentFormField.editable);
+                        divA.appendChild(textAreaField);
+                        break;
+                       
+                    case "textinput":
+                        var textInputField = document.createElement('input');
+                        if(currentFormField.autofill != null)
+                            textInputField.setAttribute("value",currentFormField.autofill);
+                        textInputField.required = currentFormField.required;
+                        textInputField.disabled = (!currentFormField.editable);
+                        divA.appendChild(textInputField);
+                        break;
+                       
+                    case "checkbox":
+                        currentFormField['options'].forEach(function(currentCheckBoxItem){
+                            var checkBoxDiv = document.createElement('div');
+                            var check_Box = document.createElement('input');
+                            check_Box.setAttribute('type','checkbox');
+                            //check_Box.setAttribute('name','');
+                            var checkBoxLabel = document.createElement('span');
+                            checkBoxLabel.innerHTML = currentCheckBoxItem;
+                            if(currentFormField.autoselect != null){
+                                if(checked(currentFormField.autoselect,currentCheckBoxItem))
+                                    check_Box.setAttribute('checked','checked');
+                            }
+                            checkBoxDiv.appendChild(check_Box);
+                            checkBoxDiv.appendChild(checkBoxLabel);
+                            checkBoxDiv.setAttribute('class','checkBoxDivClass');
+                            divA.appendChild(checkBoxDiv);
+                        });
+                        break;
+                        
+                    case "select":
+                        var selectTab = document.createElement('select');
+                        var defaultSelectValue = currentFormField.autoselect;
+                        currentFormField['options'].forEach(function(currentSelectItem){
+                            var selectOptions = document.createElement('option');
+                            selectOptions.innerHTML = currentSelectItem;
+                            if(currentSelectItem == defaultSelectValue)
+                                selectOptions.setAttribute('selected','selected');
+                            selectTab.appendChild(selectOptions);
+                        });
+                        selectTab.required = currentFormField.required;
+                        selectTab.disabled = (!currentFormField.editable);
+                        divA.appendChild(selectTab);
+                        break;
+                        
+                    case "radio":
+                        var defaultRadioValue = currentFormField.autoselect;
+                        currentFormField['options'].forEach(function(currentRadioItem){
+                            var radioButtonContainer = document.createElement('div');
+                            var radioButton = document.createElement('input');
+                            radioButton.setAttribute('type','radio');
+                            radioButton.setAttribute('name',currentFormField.label);
+                            //check_Box.setAttribute('name','');
+                            if(currentRadioItem == defaultRadioValue)
+                                radioButton.setAttribute('checked','checked');
+                            var radioLabel = document.createElement('span');
+                            radioLabel.innerHTML = currentRadioItem;
+                            
+                            radioButtonContainer.appendChild(radioButton);
+                            radioButtonContainer.appendChild(radioLabel);
+                            //radioButtonContainer.setAttribute('class','radioClass');
+                            divA.appendChild(radioButtonContainer);
+                        });
+                }
+                field_set.appendChild(divQ);
+                field_set.appendChild(divA);
+                formDOM.appendChild(field_set);
+            }); //-----End of Form Creation Part -----
+           
+            var submitButton = "<br/><button id = 'submitButton'>SUBMIT</button>";
+            formDOM.innerHTML += submitButton;
+            
+            /*  --------------------  FUNCTION for checking the Checkbox Default Checks  --------------------  */
+            function checked(defaultVals,checkboxItem){
+                console.log(defaultVals.toString());
+                for(i=0;i<defaultVals.length;i++){
+                    if(checkboxItem == defaultVals[i])
+                        return true;
+                }
+                return false;
+            }
+            
+        }
+    };
+    xhttp.open("GET", "https://randomform.herokuapp.com", true);
+    xhttp.send();
+}
+</script>
